@@ -121,7 +121,6 @@
 #' @importFrom doParallel registerDoParallel
 #' @importFrom parallel makeCluster
 #' @importFrom parallel clusterExport
-#' @importFrom parallel detectCores
 #' @importFrom parallel stopCluster
 #' @import foreach 
 #' @importFrom stats cov
