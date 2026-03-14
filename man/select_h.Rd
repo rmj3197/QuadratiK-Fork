@@ -8,6 +8,7 @@ select_h(
   x,
   y = NULL,
   alternative = NULL,
+  dist_family = "cauchy",
   method = "subsampling",
   b = 0.8,
   B = 100,
