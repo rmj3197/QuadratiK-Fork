@@ -258,25 +258,22 @@ select_h <- function(x,
     skew_data <- skewness(pooled) }
 
   else if (dist_family == "cauchy") {
-    # print("Estimating cauchy params")
-    # mean_dat <- robustbase::colMedians(pooled)
-    # robust_fit <- MASS::cov.trob(pooled, nu = 1)
-    scales <- apply(x, 2, function(col) TidyDensity::util_cauchy_param_estimate(col)$parameter_tbl$scale)
+    scales <- apply(pooled, 2, function(col) TidyDensity::util_cauchy_param_estimate(col)$
+      parameter_tbl$
+      scale)
     S_dat <- diag(scales)
 
-    means <- apply(x, 2, function(col) TidyDensity::util_cauchy_param_estimate(col)$parameter_tbl$location)
+    means <- apply(pooled, 2, function(col) TidyDensity::util_cauchy_param_estimate(col)$
+      parameter_tbl$
+      location)
     mean_dat <- diag(means)
-
-    # S_dat <- robust_fit$cov
-    # S_dat <- diag(diag(S_dat), nrow = d, ncol = d)
     skew_data <- skewness(pooled)
   }
 
   else if (dist_family == "t-dis") {
-    mean_dat <- colMeans(pooled)
-    robust_fit <- MASS::cov.trob(pooled, nu = 2)
-    S_dat <- robust_fit$cov
-    S_dat <- diag(diag(S_dat), nrow = d, ncol = d)
+    t_estimates <- MASS::cov.trob(pooled, nu = 2)
+    mean_dat <- t_estimates$center
+    S_dat <- t_estimates$cov
     skew_data <- skewness(pooled)
   }
 
