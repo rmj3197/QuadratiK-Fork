@@ -363,16 +363,16 @@ select_h <- function(x,
 
     else if (dist_family == "t-dis") {
       xnew <- rbind(
-        LaplacesDemon::rmvt(
+        mvtnorm::rmvt(
           n = nk * (K - 1),
-          mu = mean_dat,
-          S = S_dat,
+          sigma = S_dat,
+          delta = mean_dat,
           df = 2
         ),
-        LaplacesDemon::rmvt(
+        mvtnorm::rmvt(
           n = nk,
-          mu = mean_tilde,
-          S = S_tilde,
+          sigma = S_tilde,
+          delta = mean_tilde,
           df = 2
         )
       )
