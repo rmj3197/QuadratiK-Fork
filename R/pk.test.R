@@ -186,14 +186,14 @@ setMethod("show", "pk.test",
              cat("Selected consentration parameter rho: ", object@rho, "\n")
              
              cat("\n")
-             cat("U-statistic:\n")
+             cat("Tn-statistic:\n")
              cat("\n")
              cat("H0 is rejected: ", object@H0_Un , "\n")
              cat("Statistic Un: ", object@Un, "\n")
              cat("Critical value: ", object@CV_Un,"\n")
              
              cat("\n")
-             cat("V-statistic:\n")
+             cat("Sn-statistic:\n")
              cat("\n")
              cat("H0 is rejected: ", object@H0_Vn, "\n")
              cat("Statistic Vn: ", object@Vn, "\n")

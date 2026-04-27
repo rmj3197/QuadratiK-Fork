@@ -476,7 +476,7 @@ setMethod("show", "kb.test",
     
     if(length(object@Vn)==0){
        
-       cat("U-statistic\t Dn \t\t Trace \n")
+       cat("Statistics\t Dn \t\t Trace \n")
        cat("------------------------------------------------\n")
        cat("Test Statistic:\t", object@Un[1], "\t", object@Un[2], "\n")
        cat("Critical Value:\t", object@CV_Un[1], "\t", object@CV_Un[2], "\n")
