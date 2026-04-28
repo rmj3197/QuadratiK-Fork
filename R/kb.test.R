@@ -32,9 +32,11 @@
 #'          (default: 0.8).
 #' @param Quantile The quantile to use for critical value estimation, 0.95 is 
 #'                 the default value.
-#' @param mu_hat Mean vector for the reference distribution.
+#' @param mu Mean vector for the reference distribution. Mandatory for the 
+#'           normality test.
 #'                
-#' @param Sigma_hat Covariance matrix of the reference distribution.
+#' @param Sigma Covariance matrix of the reference distribution. Mandatory for 
+#'              the normality test.
 #' @param centeringType String indicating the method used for centering the 
 #'                      normal kernel ('Param' or 'Nonparam').
 #' @param K_threshold maximum number of groups allowed. Default is 10. It is a 
@@ -140,11 +142,11 @@
 #' }
 #' 
 #' ### Kernel centering
-#' The arguments \code{mu_hat} and \code{Sigma_hat} indicate the normal model 
-#' considered for the normality test, that is \eqn{H_0: F = N(}\code{mu_hat},
-#' \code{Sigma_hat}). 
-#' For the two-sample and \eqn{k}-sample tests, \code{mu_hat} and 
-#' \code{Sigma_hat} can 
+#' The arguments \code{mu} and \code{Sigma} indicate the normal model
+#' considered for the normality test, that is \eqn{H_0: F = N(}\code{mu},
+#' \code{Sigma}).
+#' For the two-sample and \eqn{k}-sample tests, \code{mu} and
+#' \code{Sigma} can
 #' be used for the parametric centering of the kernel, in the case we want to 
 #' specify the reference distribution, with \code{centeringType = "Param"}. 
 #' This is the default method when the test for normality is performed.
@@ -226,7 +228,7 @@
 #' y <- matrix(rnorm(100), ncol = 2)
 #' 
 #' # Normality test
-#' my_test <- kb.test(x, h=0.5)
+#' my_test <- kb.test(x, h=0.5, mu = c(0,0), Sigma = diag(2))
 #' my_test
 #' 
 #' # Two-sample test
@@ -254,8 +256,8 @@
 #' @export
 setGeneric("kb.test",function(x, y = NULL, h = NULL, method = "subsampling", 
                               B = 150, b = NULL, Quantile = 0.95, 
-                              mu_hat = NULL, Sigma_hat = NULL, 
-                              centeringType = "Nonparam", 
+                              mu = NULL, Sigma = NULL,
+                              centeringType = "Nonparam",
                               K_threshold = 10, alternative = "skewness")
    standardGeneric("kb.test"))
 #' @rdname kb.test
@@ -268,8 +270,8 @@ setGeneric("kb.test",function(x, y = NULL, h = NULL, method = "subsampling",
 #' @export
 setMethod("kb.test", signature(x = "ANY"),
           function(x, y=NULL, h=NULL, method="subsampling", B = 150,
-                   b = 0.9, Quantile = 0.95, mu_hat = NULL,
-                   Sigma_hat = NULL, centeringType="Nonparam",
+                   b = 0.9, Quantile = 0.95, mu = NULL,
+                   Sigma = NULL, centeringType="Nonparam",
                    K_threshold=10, alternative="skewness"){
              
              
@@ -323,12 +325,22 @@ setMethod("kb.test", signature(x = "ANY"),
              size_x <- nrow(x)
              k <- ncol(x)
              
+             if (is.null(y)) {
+                if (is.null(mu) | is.null(Sigma)) {
+                   stop("mu and Sigma must be provided for the normality test.")
+                }
+             } else if (centeringType == "Param") {
+                if (is.null(mu) | is.null(Sigma)) {
+                   stop("mu and Sigma must be provided for the parametric 2 sample test.")
+                }
+             }
+             
              if (is.null(h) & is.null(y)){
                 
                 #stop("A value of the tuning parameter h must be provided to 
                 #perform the kernel-based quadratic distance Normality tests")
                 h_best <- select_h(x=x, alternative=alternative, method=method,
-                                   b=b, B=B, power.plot=FALSE)
+                                   b=b, B=B, mu=mu, Sigma=Sigma, power.plot=FALSE)
                 h <- h_best$h_sel
              
              } else if (is.null(h)& !(is.null(y))){
@@ -343,28 +355,16 @@ setMethod("kb.test", signature(x = "ANY"),
              
              if(is.null(y)){
                 
-                
                 METHOD <- "Kernel-based quadratic distance Normality test"
-                
-                # Compute the estimates of mean and covariance from the data
-                if(is.null(mu_hat)){
-                   mu_hat <- rep(0,k)
-                } else {
-                   x <- x - mu_hat
-                   mu_hat <- rep(0,k)
-                }
-                if(is.null(Sigma_hat)){
-                   Sigma_hat <- diag(k)
-                }
-                
-                STATISTIC <- kbNormTest(x, h, mu_hat, Sigma_hat)
-                CV_Un <- normal_CV(k, size_x, h, mu_hat, Sigma_hat, B, Quantile)
+
+                STATISTIC <- kbNormTest(x, h, mu, Sigma)
+                CV_Un <- normal_CV(k, size_x, h, mu, Sigma, B, Quantile)
                 Sigma_h <- h^2*diag(k)
-                dof <- DOF_norm(Sigma_h, Sigma_hat)
+                dof <- DOF_norm(Sigma_h, Sigma)
                 qu_q <- qchisq(Quantile,df=dof$DOF)
                 CV_Vn <- dof$Coefficient*qu_q
                 
-                var_Un <- var_norm(Sigma_h, Sigma_hat, size_x)
+                var_Un <- var_norm(Sigma_h, Sigma, size_x)
                 CV_Un <- CV_Un/sqrt(var_Un)
                 
                 H0_Un <- (STATISTIC[1]/sqrt(var_Un) > CV_Un)
@@ -372,7 +372,7 @@ setMethod("kb.test", signature(x = "ANY"),
                 res <- new("kb.test", Un = STATISTIC[1]/sqrt(var_Un), 
                            Vn = STATISTIC[2], CV_Un = CV_Un, CV_Vn = CV_Vn, 
                            H0_Un = H0_Un, H0_Vn = STATISTIC[2] > CV_Vn, 
-                           method = METHOD, data = list(x = x), 
+                           method = METHOD, data = list(x = x, mu = mu, Sigma = Sigma), 
                            B= B, h= h_best, var_Un = var_Un)
                 
              } else {
@@ -396,17 +396,8 @@ setMethod("kb.test", signature(x = "ANY"),
                    
                    if(centeringType == "Param"){
                       
-                      # Compute the estimates of mean and covariance from the 
-                      # data
-                      if(is.null(mu_hat)){
-                         mu_hat <- colMeans(data_pool)
-                      }
-                      if(is.null(Sigma_hat)){
-                         Sigma_hat <- cov(data_pool)
-                      }
-                      
-                      STATISTIC <- stat2sample(x, y, h, mu_hat, 
-                                               Sigma_hat, "Param",
+                      STATISTIC <- stat2sample(x, y, h, mu,
+                                               Sigma, "Param",
                                                compute_variance = TRUE)
                       
                    } else if(centeringType == "Nonparam"){
@@ -476,21 +467,19 @@ setMethod("show", "kb.test",
     
     if(length(object@Vn)==0){
        
-       cat("Statistics\t Dn \t\t Trace \n")
-       cat("------------------------------------------------\n")
-       cat("Test Statistic:\t", object@Un[1], "\t", object@Un[2], "\n")
-       cat("Critical Value:\t", object@CV_Un[1], "\t", object@CV_Un[2], "\n")
-       cat("H0 is rejected:\t", object@H0_Un[1], "\t\t", object@H0_Un[2], "\n")
+       cat(sprintf("%-18s %-12s %-12s\n", "Statistics", "Dn", "Trace"))
+       cat("--------------------------------------------\n")
+       cat(sprintf("%-18s %-12s %-12s\n", "Test Statistic:", format(object@Un[1],6), format(object@Un[2],6)))
+       cat(sprintf("%-18s %-12s %-12s\n", "Critical Value:", format(object@CV_Un[1],6), format(object@CV_Un[2],6)))
+       cat(sprintf("%-18s %-12s %-12s\n", "H0 is rejected:", format(object@H0_Un[1],6), format(object@H0_Un[2],6)))
        
        cat("CV method: ", object@cv_method, "\n")
     } else {
-       
-       cat("\t\tU-statistic\tV-statistic\n")
-       cat("------------------------------------------------\n")
-       cat("Test Statistic:\t", object@Un, "\t", object@Vn, "\n")
-       cat("Critical Value:\t", object@CV_Un, "\t", object@CV_Vn, "\n")
-       cat("H0 is rejected:\t", object@H0_Un, "\t\t", object@H0_Vn, "\n")
-       
+       cat(sprintf("%-18s %-12s %-12s\n", "Statistics", "U-statistic", "V-statistic"))
+       cat("--------------------------------------------\n")
+       cat(sprintf("%-18s %-12s %-12s\n", "Test Statistic:", format(object@Un, 6), format(object@Vn, 6)))
+       cat(sprintf("%-18s %-12s %-12s\n", "Critical Value:", format(object@CV_Un, 6), format(object@CV_Vn, 6)))
+       cat(sprintf("%-18s %-12s %-12s\n", "H0 is rejected:", format(object@H0_Un, 6), format(object@H0_Vn, 6)))
     }
     
     cat("Selected tuning parameter h: ", object@h$h_sel, "\n")
@@ -522,7 +511,7 @@ setMethod("show", "kb.test",
 #' # create a kb.test object
 #' x <- matrix(rnorm(100),ncol=2)
 #' # Normality test
-#' my_test <- kb.test(x, h=0.5)
+#' my_test <- kb.test(x, h=0.5, mu = c(0,0), Sigma = diag(2))
 #' summary(my_test)
 #' 
 #' @srrstats {G1.4} roxigen2 is used
@@ -650,7 +639,7 @@ setMethod("summary", "kb.test", function(object) {
       
    }
    # Print main results of the test
-   cat( "\n", object@method, "\n")
+   cat("\n", object@method, "\n")
    if(length(object@Vn)==0){
       test_results <- data.frame(
          Statistic = c("Dn", "Trace"),

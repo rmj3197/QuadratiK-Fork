@@ -183,7 +183,7 @@ setMethod("pk.test", signature(x = "ANY"),
 setMethod("show", "pk.test",
           function(object) {
              cat( "\n", object@method, "\n")
-             cat("Selected consentration parameter rho: ", object@rho, "\n")
+             cat("Selected concentration parameter rho: ", object@rho, "\n")
              
              cat("\n")
              cat("Tn-statistic:\n")

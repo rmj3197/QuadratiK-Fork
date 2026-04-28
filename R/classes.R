@@ -30,7 +30,7 @@
 #' x <- matrix(rnorm(100), ncol = 2)
 #' y <- matrix(rnorm(100), ncol = 2)
 #' # Normality test
-#' kb.test(x, h = 0.5)
+#' kb.test(x, h = 0.5, mu = c(0,0), Sigma = diag(2))
 #' 
 #' # Two-sample test
 #' kb.test(x, y, h=0.5, method = "subsampling", b = 0.9)

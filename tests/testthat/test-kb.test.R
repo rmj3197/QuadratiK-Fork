@@ -83,22 +83,24 @@ test_that("Handle vector x input correctly", {
    
    set.seed(123)
    # x is a vector
-   result <- kb.test(x = rnorm(10), h=0.5)
+   result <- kb.test(x = rnorm(10), h=0.5, mu = 0, Sigma = matrix(1))
    expect_s4_class(result, "kb.test")
    expect_equal(result@method, "Kernel-based quadratic distance Normality test")
    
    # x is a data.frame
-   result <- kb.test(x = data.frame(matrix(rnorm(20),ncol=2)), h=0.5)
+   result <- kb.test(x = data.frame(matrix(rnorm(20),ncol=2)), h=0.5, 
+                     mu = c(0,0), Sigma = diag(2))
    expect_s4_class(result, "kb.test")
    
    # x is a matrix
-   result <- kb.test(x = matrix(rnorm(20),ncol=2), h=0.5)
+   result <- kb.test(x = matrix(rnorm(20),ncol=2), h=0.5, 
+                     mu = c(0,0), Sigma = diag(2))
    expect_s4_class(result, "kb.test")
    
    # test show method
    output <- capture.output(show(result))
-   expect_true(any(grepl("\t\tU-statistic\tV-statistic", output)))
-   expect_true(any(grepl("H0 is rejected:\t", output)))
+   expect_true(any(grepl("Statistics         U-statistic  V-statistic", output)))
+   expect_true(any(grepl("H0 is rejected:", output)))
    
    # test summary method
    s <- summary(result)
@@ -134,7 +136,7 @@ test_that("Functionality with valid inputs", {
    expect_equal(nrow(s$test_results), 2)
    
    # Test parametric centering
-   result <- kb.test(x, y, h=0.5, method = "bootstrap", centeringType = "Param")
+   result <- kb.test(x, y, h=0.5, method = "bootstrap", centeringType = "Param", mu = c(0,0), Sigma = diag(2))
    expect_s4_class(result, "kb.test")
    expect_equal(result@method,"Kernel-based quadratic distance two-sample test")
    
@@ -172,7 +174,7 @@ test_that("Functionality with valid inputs", {
    
    # test show method
    output <- capture.output(show(result))
-   expect_true(any(grepl("U-statistic\t Dn \t\t Trace", output)))
+   expect_true(any(grepl("Statistics         Dn           Trace", output)))
    expect_true(any(grepl("CV method:  bootstrap ", output)))
    
    # test summary method
@@ -200,8 +202,8 @@ test_that("Selection of h from kb.test", {
    x <- matrix(rnorm(100), ncol = 2)
    y <- rep(c(1,2), each=25)
 
-   result <- kb.test(x, method = "subsampling", mu_hat = c(0,0),
-                     Sigma_hat = diag(2), b = 0.5)
+   result <- kb.test(x, method = "subsampling", mu = c(0,0),
+                     Sigma = diag(2), b = 0.5)
    expect_s4_class(result, "kb.test")
    expect_equal(result@method, "Kernel-based quadratic distance Normality test")
    expect_equal(class(result@h$h_sel), "numeric")
@@ -210,6 +212,23 @@ test_that("Selection of h from kb.test", {
    expect_s4_class(result, "kb.test")
    expect_equal(class(result@h$h_sel), "numeric")
    
+})
+
+# Test 9: Error when mu and Sigma are missing for normality test
+test_that("Error when mu and Sigma are missing for normality test", {
+   set.seed(123)
+   x <- matrix(rnorm(100), ncol = 2)
+   expect_error(kb.test(x, h=0.5), 
+                "mu and Sigma must be provided for the normality test.")
+})
+
+# Test 10: Error when mu and Sigma are missing for parametric 2 sample test
+test_that("Error when mu and Sigma are missing for parametric 2 sample test", {
+   set.seed(123)
+   x <- matrix(rnorm(100), ncol = 2)
+   y <- matrix(rnorm(100), ncol = 2)
+   expect_error(kb.test(x, y, h=0.5, centeringType = "Param"), 
+                "mu and Sigma must be provided for the parametric 2 sample test.")
 })
 
 
