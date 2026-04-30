@@ -29,6 +29,9 @@ test_that("Error on invalid method input", {
    expect_error(select_h(x = matrix(rnorm(20), ncol = 2), alternative = "location"),
                 "mu and Sigma must be provided for the normality test.", fixed=TRUE)
    
+   expect_error(select_h(x = matrix(rnorm(20), ncol = 2), alternative = "skewness", mu = c(0,0), Sigma = diag(2)),
+                "Skewness alternative is not available for the normality test. Please choose 'location' or 'scale'.", fixed=TRUE)
+
    # x is not numeric
    expect_error(select_h(x = "invalid", alternative="skewness"), 
                 "x must be numeric", fixed=TRUE)

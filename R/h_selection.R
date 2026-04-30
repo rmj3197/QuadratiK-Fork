@@ -19,11 +19,13 @@
 #' }
 #' @param alternative Family of alternative chosen for selecting h, between
 #'                    "location", "scale" and "skewness".
+#'                    Note that "skewness" is not available for the normality test.
 #' @param method The method used for critical value estimation
-#'               ("subsampling", "bootstrap", or "permutation").
-#' @param b The size of the subsamples used in the subsampling algorithm .
-#' @param B The number of iterations to use for critical value estimation,
-#'          B = 150 as default.
+#'               ("subsampling", "bootstrap", or "permutation") (default: "subsampling").
+#' @param B The number of iterations to use for critical value estimation
+#'          (default: 150).
+#' @param b The size of the subsamples used in the subsampling algorithm 
+#'          (default: 0.9).
 #' @param delta_dim Vector of coefficient of alternative with respect to each
 #'                  dimension
 #' @param delta Vector of parameter values indicating chosen alternatives
@@ -114,7 +116,7 @@
 #' \donttest{
 #' x <- matrix(rnorm(100), ncol = 2)
 #' y <- matrix(rnorm(100), ncol = 2)
-#' h_sel <- select_h(x, y, "skewness")
+#' h_sel <- select_h(x, y, alternative = "skewness")
 #' h_sel
 #' }
 #'
@@ -150,8 +152,8 @@ select_h <- function(x,
                      y = NULL,
                      alternative = NULL,
                      method = "subsampling",
-                     b = 0.8,
-                     B = 100,
+                     B = 150,
+                     b = 0.9,
                      delta_dim = 1,
                      delta = NULL,
                      h_values = NULL,
@@ -193,6 +195,10 @@ select_h <- function(x,
    
    if (!(alternative %in% c("location", "scale", "skewness"))) {
       stop("The alternative argument should be one of 'location', 'scale' or 'skewness'")
+   }
+
+   if (is.null(y) && alternative == "skewness") {
+      stop("Skewness alternative is not available for the normality test. Please choose 'location' or 'scale'.")
    }
    
    n <- nrow(x)
@@ -370,10 +376,6 @@ select_h <- function(x,
          mean_tilde <- mean_dat
          S_tilde <- S_dat * dk
          skew_tilde <- skew_data
-      } else if (alternative == 'skewness') {
-         mean_tilde <- mean_dat
-         skew_tilde <- skew_data + dk
-         S_tilde <- S_dat
       }
       
       xnew <- sn::rmsn(n,

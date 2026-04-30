@@ -33,10 +33,10 @@
 #' @param Quantile The quantile to use for critical value estimation, 0.95 is 
 #'                 the default value.
 #' @param mu Mean vector for the reference distribution. Mandatory for the 
-#'           normality test.
+#'           normality test and parametric two-sample test.
 #'                
 #' @param Sigma Covariance matrix of the reference distribution. Mandatory for 
-#'              the normality test.
+#'              the normality test and parametric two-sample test.
 #' @param centeringType String indicating the method used for centering the 
 #'                      normal kernel ('Param' or 'Nonparam').
 #' @param K_threshold maximum number of groups allowed. Default is 10. It is a 
@@ -66,8 +66,8 @@
 #' tuning parameter \eqn{h}. \cr
 #' \itemize{
 #'    \item **Test for Normality**: \cr
-#'    Let \eqn{x_1, x_2, ..., x_n} be a random sample with empirical 
-#'    distribution function \eqn{\hat F}. We test the null hypothesis of 
+#'    Let \eqn{x_1, x_2, ..., x_n} be a random sample with
+#'    distribution function \eqn{F}. We test the null hypothesis of
 #'    normality, i.e. \eqn{H_0:F=G=\mathcal{N}_d(\mu, \Sigma)}. 
 #'    
 #'    We consider the U-statistic estimate of the sample KBQD
@@ -89,7 +89,7 @@
 #'    are computed exactly following the formulas in Lindsay et al.(2014).
 #' 
 #'    For the \eqn{U}-statistic the cutoff is determined empirically:
-#'    -  Generate data from the considered normal distribution ;
+#'    - Generate data from the considered normal distribution ;
 #'    - Compute the test statistics for \code{B} Monte Carlo(MC) replications;
 #'    - Compute the 95th quantile of the empirical distribution of the test
 #'      statistic.
@@ -145,11 +145,11 @@
 #' The arguments \code{mu} and \code{Sigma} indicate the normal model
 #' considered for the normality test, that is \eqn{H_0: F = N(}\code{mu},
 #' \code{Sigma}).
-#' For the two-sample and \eqn{k}-sample tests, \code{mu} and
+#' For the two-sample test, \code{mu} and
 #' \code{Sigma} can
 #' be used for the parametric centering of the kernel, in the case we want to 
 #' specify the reference distribution, with \code{centeringType = "Param"}. 
-#' This is the default method when the test for normality is performed.
+#' This is the method used when the test for normality is performed.
 #' The normal kernel centered with respect to 
 #'  \eqn{G \sim N_d(\mathbf{\mu}, \mathbf{V})} can be computed as
 #'  \deqn{K_{cen(G)}(\mathbf{s}, \mathbf{t}) = 
@@ -178,30 +178,41 @@
 #' \itemize{
 #'   \item \code{method}: Description of the kernel-based quadratic 
 #'   distance test performed.
-#'   \item \code{x} Data list of samples X (and Y).
-#'   \item \code{Un} The value of the U-statistic.
+#'   \item \code{data} Data list of samples X (and Y).
+#'   \item \code{Un} The value of the U-statistic (for Normality test).
+#'   \item \code{Vn} The value of the V-statistic (for Normality test).
+#'   \item \code{Dn} The value of the Dn statistic (for two- and k-sample tests).
+#'   \item \code{Trace} The value of the Trace statistic (for two- and 
+#'   k-sample tests).
 #'   \item \code{H0_Un} A logical value indicating whether or not the null 
 #'   hypothesis is rejected according to Un.
-#'   \item \code{CV_Un} The critical value computed for the test Un.
-#'   \item \code{Vn} The value of the V-statistic (if available).
 #'   \item \code{H0_Vn} A logical value indicating whether or not the null 
-#'   hypothesis is rejected according to Vn (if available).
-#'   \item \code{CV_Vn} The critical value computed for the test Vn 
-#'   (if available).
+#'   hypothesis is rejected according to Vn.
+#'   \item \code{H0_Dn} A logical value indicating whether or not the null 
+#'   hypothesis is rejected according to Dn.
+#'   \item \code{H0_Trace} A logical value indicating whether or not the null 
+#'   hypothesis is rejected according to Trace.
+#'   \item \code{CV_Un} The critical value computed for the test Un.
+#'   \item \code{CV_Vn} The critical value computed for the test Vn.
+#'   \item \code{CV_Dn} The critical value computed for the test Dn.
+#'   \item \code{CV_Trace} The critical value computed for the test Trace.
 #'   \item \code{h} List with the value of bandwidth parameter used for the 
 #'   normal kernel function. If \code{select_h} is used, the matrix of computed 
 #'   power values and the corresponding power plot are also provided. 
 #'   \item \code{B} Number of bootstrap/permutation/subsampling replications.
 #'   \item \code{var_Un} exact variance of the kernel-based U-statistic.
+#'   \item \code{var_Dn} exact variance of the kernel-based Dn-statistic.
+#'   \item \code{var_Trace} exact variance of the kernel-based Trace-statistic.
 #'   \item \code{cv_method} The method used to estimate the critical value 
 #'   (one of "subsampling", "permutation" or "bootstrap").
 #'   
 #' }
 #' 
 #' @note
-#' For the two- and \eqn{k}-sample tests, the slots \code{Vn}, \code{H0_Vn} and 
-#' \code{CV_Vn} are empty, while the computed statistics are both reported in
-#' slots \code{Un}, \code{H0_Un} and \code{CV_Un}.
+#' For the two- and \eqn{k}-sample tests, the slots \code{Un}, \code{Vn}, 
+#' \code{CV_Un} and \code{CV_Vn} are empty, while the computed statistics are 
+#' reported in slots \code{Dn}, \code{Trace}, \code{CV_Dn} and \code{CV_Trace}.
+#' The logical results of the tests are reported in \code{H0_Dn} and \code{H0_Trace}.
 #' 
 #' A U-statistic is a type of statistic that is used to estimate a population
 #' parameter. It is based on the idea of averaging over all possible *distinct*
@@ -254,11 +265,11 @@
 #' @srrstats {G2.0a,G2.1,G2.3b} The code considers the different inputs
 #' 
 #' @export
-setGeneric("kb.test",function(x, y = NULL, h = NULL, method = "subsampling", 
-                              B = 150, b = NULL, Quantile = 0.95, 
+setGeneric("kb.test",function(x, y = NULL, h = NULL, method = "subsampling",
+                              B = 150, b = NULL, Quantile = 0.95,
                               mu = NULL, Sigma = NULL,
                               centeringType = "Nonparam",
-                              K_threshold = 10, alternative = "skewness")
+                              K_threshold = 10, alternative = NULL)
    standardGeneric("kb.test"))
 #' @rdname kb.test
 #' 
@@ -272,28 +283,31 @@ setMethod("kb.test", signature(x = "ANY"),
           function(x, y=NULL, h=NULL, method="subsampling", B = 150,
                    b = 0.9, Quantile = 0.95, mu = NULL,
                    Sigma = NULL, centeringType="Nonparam",
-                   K_threshold=10, alternative="skewness"){
-             
-             
+                   K_threshold=10, alternative=NULL){
+
+             if (is.null(alternative)) {
+                if (is.null(y)) {
+                   alternative <- "location"
+                } else {
+                   alternative <- "skewness"
+                }
+             }
+
              if(!(method%in%c("bootstrap", "permutation", "subsampling"))){
-                stop("method must be one of 'bootstrap', 'permutation' or 
-                     'subsampling'")
+                stop("method must be one of 'bootstrap', 'permutation' or 'subsampling'")
              }
              if(b<=0 | b>1){
-                stop("b indicates the proportion used for the subsamples in the
-                     subsampling algoritm. It must be in (0,1].")
+                stop("b indicates the proportion used for the subsamples in the subsampling algoritm. It must be in (0,1].")
              }
-             
+
              if(!(alternative%in%c("skewness", "location", "scale"))){
-               stop("The algorithm for selecting the value of h can be performed
-                    with respect to the following families of alternatives: 
-                    'location', 'scale' or 'skewness'")
+               stop("The algorithm for selecting the value of h can be performed with respect to the following families of alternatives: 'location', 'scale' or 'skewness'")
              }
-             
+
              if(!(centeringType%in%c("Param", "Nonparam"))){
                 stop("centering must be chosen between 'Param' and 'Nonparam'")
              }
-             
+
              if(!is.numeric(x) & !is.data.frame(x)){
                 stop("x must be numeric")
              }
@@ -302,13 +316,13 @@ setMethod("kb.test", signature(x = "ANY"),
                 x <- matrix(x, ncol = 1)
              } else if(is.data.frame(x)) {
                 x <- as.matrix(x)
-             } 
+             }
              if(any(is.na(x))){
                 stop("There are missing values in x!")
              } else if(any(is.infinite(x) |is.nan(x))){
                 stop("There are undefined values in x, that is Nan, Inf, -Inf")
              }
-             
+
              if(!is.null(y)){
                 if(is.vector(y) | is.factor(y)) {
                    y <- matrix(as.numeric(y), ncol = 1)
@@ -321,41 +335,46 @@ setMethod("kb.test", signature(x = "ANY"),
                stop("There are undefined values in y, that is Nan, Inf, -Inf")
                 }
              }
-             
+
              size_x <- nrow(x)
              k <- ncol(x)
-             
+
              if (is.null(y)) {
                 if (is.null(mu) | is.null(Sigma)) {
                    stop("mu and Sigma must be provided for the normality test.")
                 }
+
              } else if (centeringType == "Param") {
                 if (is.null(mu) | is.null(Sigma)) {
                    stop("mu and Sigma must be provided for the parametric 2 sample test.")
                 }
              }
-             
+
              if (is.null(h) & is.null(y)){
-                
-                #stop("A value of the tuning parameter h must be provided to 
+
+                #stop("A value of the tuning parameter h must be provided to
                 #perform the kernel-based quadratic distance Normality tests")
                 h_best <- select_h(x=x, alternative=alternative, method=method,
                                    b=b, B=B, mu=mu, Sigma=Sigma, power.plot=FALSE)
                 h <- h_best$h_sel
-             
+
              } else if (is.null(h)& !(is.null(y))){
-                
-                h_best <- select_h(x=x, y=y, alternative=alternative, 
+
+                h_best <- select_h(x=x, y=y, alternative=alternative,
                                    method=method, b=b, B=B, power.plot=FALSE)
                 h <- h_best$h_sel
 
              } else {
                 h_best <- list(h_sel=h)
              }
-             
+
              if(is.null(y)){
-                
+
+
                 METHOD <- "Kernel-based quadratic distance Normality test"
+
+                x <- x - mu
+                mu <- rep(0,k)
 
                 STATISTIC <- kbNormTest(x, h, mu, Sigma)
                 CV_Un <- normal_CV(k, size_x, h, mu, Sigma, B, Quantile)
@@ -363,95 +382,101 @@ setMethod("kb.test", signature(x = "ANY"),
                 dof <- DOF_norm(Sigma_h, Sigma)
                 qu_q <- qchisq(Quantile,df=dof$DOF)
                 CV_Vn <- dof$Coefficient*qu_q
-                
+
                 var_Un <- var_norm(Sigma_h, Sigma, size_x)
                 CV_Un <- CV_Un/sqrt(var_Un)
-                
+
                 H0_Un <- (STATISTIC[1]/sqrt(var_Un) > CV_Un)
-                
-                res <- new("kb.test", Un = STATISTIC[1]/sqrt(var_Un), 
-                           Vn = STATISTIC[2], CV_Un = CV_Un, CV_Vn = CV_Vn, 
-                           H0_Un = H0_Un, H0_Vn = STATISTIC[2] > CV_Vn, 
-                           method = METHOD, data = list(x = x, mu = mu, Sigma = Sigma), 
+
+                res <- new("kb.test", Un = STATISTIC[1]/sqrt(var_Un),
+                           Vn = STATISTIC[2], CV_Un = CV_Un, CV_Vn = CV_Vn,
+                           H0_Un = H0_Un, H0_Vn = STATISTIC[2] > CV_Vn,
+                           method = METHOD, data = list(x = x, mu = mu, Sigma = Sigma),
                            B= B, h= h_best, var_Un = var_Un)
-                
+
              } else {
-                
+
                 K <- length(unique(y))
-                
-                if(K > K_threshold){ 
-                   #Here we consider a maximum number of groups. However this 
+
+                if(K > K_threshold){
+                   #Here we consider a maximum number of groups. However this
                    #threshold can be set to a higher value by the user if needed
-                   
+
                    # Check that they have the same number of columns (features):
                    if(!is.null(y) && ncol(x) != ncol(y)) {
                       stop("'x' and 'y' must have the same number of columns.")
                    }
-                   
+
                    size_y <- nrow(y)
                    data_pool <- rbind(x, y)
-                   
-                   
+
+
                    METHOD <- "Kernel-based quadratic distance two-sample test"
-                   
+
                    if(centeringType == "Param"){
-                      
+
                       STATISTIC <- stat2sample(x, y, h, mu,
                                                Sigma, "Param",
                                                compute_variance = TRUE)
-                      
+
                    } else if(centeringType == "Nonparam"){
-                      
+
                       STATISTIC <- stat2sample(x, y, h, rep(0,k),
                                                diag(k),"Nonparam",
                                                compute_variance = TRUE)
                    }
-                   
-                   CV <- compute_CV(B, Quantile, data_pool, size_x, size_y, h, 
+
+                   CV <- compute_CV(B, Quantile, data_pool, size_x, size_y, h,
                                     method, b, compute_variance = TRUE)
                    STATISTIC[1] <- STATISTIC[1]/sqrt(STATISTIC[3])
                    STATISTIC[2] <- STATISTIC[2]/sqrt(STATISTIC[4])
                    CV$cv[1] <- CV$cv[1]/sqrt(STATISTIC[3])
                    CV$cv[2] <- CV$cv[2]/sqrt(STATISTIC[4])
-                   
+
                    H0 <- (STATISTIC[1:2] > CV$cv)
-                   
-                   res <- new("kb.test", Un = STATISTIC[1:2], CV_Un = CV$cv, 
-                              H0_Un = H0, method = METHOD, 
-                              data = list(x = x, y = y), cv_method = method, 
-                              B= B, h= h_best, var_Un= STATISTIC[3:4])
+
+                   res <- new("kb.test", Dn = STATISTIC[1], Trace = STATISTIC[2],
+                              CV_Dn = CV$cv[1], CV_Trace = CV$cv[2],
+                              H0_Dn = H0[1], H0_Trace = H0[2],
+                              method = METHOD,
+                              data = list(x = x, y = y), cv_method = method,
+                              B = B, h = h_best, 
+                              var_Dn = STATISTIC[3], var_Trace = STATISTIC[4])
                 } else {
-                   
-                   
+
+
                    # Check that they have the same number of rows (observations)
                    if(!is.null(y) && nrow(x) != nrow(y)) {
                       stop("'x' and 'y' must have the same number of rows.")
                    }
 
                    METHOD <- "Kernel-based quadratic distance k-sample test"
-                   
+
                    sizes <- as.vector(table(y))
                    cum_size <- c(0,cumsum(sizes))
                    STATISTIC <- stat_ksample_cpp(x, c(y), h, sizes, cum_size,
                                                  compute_variance = TRUE)
-                   
+
                    CV <- cv_ksample(x, y, h, B, b, Quantile, method,
                                     compute_variance = TRUE)
-                   
+
                    STATISTIC[1] <- STATISTIC[1]/sqrt(STATISTIC[3])
                    STATISTIC[2] <- STATISTIC[2]/sqrt(STATISTIC[4])
                    CV$cv[1] <- CV$cv[1]/sqrt(STATISTIC[3])
                    CV$cv[2] <- CV$cv[2]/sqrt(STATISTIC[4])
-                   
+
                    H0 <- (STATISTIC[1:2] > CV$cv)
-                   
-                   res <- new("kb.test", Un = STATISTIC[1:2], CV_Un = CV$cv, 
-                              H0_Un = H0, method = METHOD,
-                              data = list(x = x, y = y), cv_method = method, 
-                              B= B, h= h_best, var_Un = STATISTIC[3:4])
+
+                   res <- new("kb.test", Dn = STATISTIC[1], Trace = STATISTIC[2],
+                              CV_Dn = CV$cv[1], CV_Trace = CV$cv[2],
+                              H0_Dn = H0[1], H0_Trace = H0[2],
+                              method = METHOD,
+                              data = list(x = x, y = y), cv_method = method,
+                              B = B, h = h_best, 
+                              var_Dn = STATISTIC[3], var_Trace = STATISTIC[4])
                 }
              }
-             
+
              return(res)
           })
 #' @rdname kb.test
@@ -464,15 +489,15 @@ setMethod("kb.test", signature(x = "ANY"),
 setMethod("show", "kb.test",
  function(object) {
     cat( "\n", object@method, "\n")
-    
-    if(length(object@Vn)==0){
-       
+
+    if(length(object@Dn) > 0){
+
        cat(sprintf("%-18s %-12s %-12s\n", "Statistics", "Dn", "Trace"))
        cat("--------------------------------------------\n")
-       cat(sprintf("%-18s %-12s %-12s\n", "Test Statistic:", format(object@Un[1],6), format(object@Un[2],6)))
-       cat(sprintf("%-18s %-12s %-12s\n", "Critical Value:", format(object@CV_Un[1],6), format(object@CV_Un[2],6)))
-       cat(sprintf("%-18s %-12s %-12s\n", "H0 is rejected:", format(object@H0_Un[1],6), format(object@H0_Un[2],6)))
-       
+       cat(sprintf("%-18s %-12s %-12s\n", "Test Statistic:", format(object@Dn,6), format(object@Trace,6)))
+       cat(sprintf("%-18s %-12s %-12s\n", "Critical Value:", format(object@CV_Dn,6), format(object@CV_Trace,6)))
+       cat(sprintf("%-18s %-12s %-12s\n", "H0 is rejected:", format(object@H0_Dn,6), format(object@H0_Trace,6)))
+
        cat("CV method: ", object@cv_method, "\n")
     } else {
        cat(sprintf("%-18s %-12s %-12s\n", "Statistics", "U-statistic", "V-statistic"))
@@ -481,9 +506,9 @@ setMethod("show", "kb.test",
        cat(sprintf("%-18s %-12s %-12s\n", "Critical Value:", format(object@CV_Un, 6), format(object@CV_Vn, 6)))
        cat(sprintf("%-18s %-12s %-12s\n", "H0 is rejected:", format(object@H0_Un, 6), format(object@H0_Vn, 6)))
     }
-    
+
     cat("Selected tuning parameter h: ", object@h$h_sel, "\n")
-    
+
     cat("\n")
  })
 #'
@@ -526,13 +551,13 @@ setMethod("show", "kb.test",
 #' @aliases summary,kb.test-method
 #' @export
 setMethod("summary", "kb.test", function(object) {
-   
+
    if(object@method=="Kernel-based quadratic distance k-sample test"){
-      
+
       x <- object@data$x
       y <- object@data$y
       k <- length(unique(y))
-      
+
       stats <- list()
       for(i in seq_len(ncol(x))){
          res <- rbind(as.numeric(by(x[,i],y,mean)),
@@ -549,14 +574,14 @@ setMethod("summary", "kb.test", function(object) {
          colnames(res) <- c(paste("Group ",seq(1,k),sep=""),"Overall")
          stats[[i]] <- res
       }
-      
+
       figure <- NA
-      
-      
+
+
    }
-   
+
    if(object@method=="Kernel-based quadratic distance two-sample test"){
-      
+
       sample1 <- as.data.frame(object@data$x)
       sample2 <- as.data.frame(object@data$y)
       colnames(sample2) <- colnames(sample1)
@@ -568,33 +593,33 @@ setMethod("summary", "kb.test", function(object) {
       })
       plot_list <- do.call(c, plot_list)
       figure <- ggarrange(plotlist = plot_list, ncol = 1)
-      # figure <- ggarrange(plotlist = plot_list, ncol = 2, 
+      # figure <- ggarrange(plotlist = plot_list, ncol = 2,
       #                     nrow = length(plot_list) / 2, widths=c(1,1.3))
-       
+
       stats <- lapply(names(sample1), function(name) {
-         
+
          compute_stats(sample1[[name]], sample2[[name]], name)$stats
-         
+
       })
       print(figure)
-      
+
    }
-   
+
    if(object@method=="Kernel-based quadratic distance Normality test"){
-      
+
       dat_x <- as.data.frame(object@data$x)
-      
+
       plot_list <- list()
       stats <- list()
       for(i in seq_len(ncol(dat_x))) {
-         
-         # qq_df <- data.frame(x = sort(qqnorm(dat_x[,i], plot = FALSE)$x), 
-         #             sample_quantiles = quantile(dat_x[,i], 
+
+         # qq_df <- data.frame(x = sort(qqnorm(dat_x[,i], plot = FALSE)$x),
+         #             sample_quantiles = quantile(dat_x[,i],
          #                         probs = seq(0, 1, length.out = nrow(dat_x))))
          x <- sort(qqnorm(dat_x[,i], plot = FALSE)$x)
-         sample_quantiles <- quantile(dat_x[,i], 
+         sample_quantiles <- quantile(dat_x[,i],
                                  probs = seq(0, 1, length.out = nrow(dat_x)))
-         
+
          pl <- ggplot(mapping=aes(x = x, y = sample_quantiles)) +
             geom_line(col="blue") +
             theme_minimal()+
@@ -602,62 +627,62 @@ setMethod("summary", "kb.test", function(object) {
             ggtitle(paste("QQ Plot against Normal - ",names(dat_x)[i])) +
             xlab("Theoretical Quantiles") +
             ylab("Sample Quantiles")
-         
+
          stats_step <- data.frame(matrix(c(mean(dat_x[,i]),sd(dat_x[,i]),
                                            median(dat_x[,i]),IQR(dat_x[,i]),
                                            min(dat_x[,i]),max(dat_x[,i])),
                                              nrow=6,ncol=1,byrow=TRUE))
          colnames(stats_step) <- c(paste(names(dat_x)[i]))
          rownames(stats_step) <- c("mean", "sd", "median", "IQR", "min", "max")
-         
+
          stats[length(stats) +1] <- stats_step
-         
+
    #    pl_stat <- ggplot() +
    # geom_table_npc(data = data.frame(Stat = rownames(stats_step), stats_step),
-   #                      aes(npcx = 0.5, npcy = 0.5, 
+   #                      aes(npcx = 0.5, npcy = 0.5,
    #        label = list(data.frame(Stat = rownames(stats_step), stats_step))),
    #                      hjust = 0.5, vjust = 0.5) +
-   #    # annotate('table', x = 0.5, y = 0.5, 
+   #    # annotate('table', x = 0.5, y = 0.5,
    #    #          label = data.frame(Stat = rownames(stats_step),stats_step),
    #    #          hjust = 0.5, vjust = 0.5) +
    #       theme_void() +
    #       ggtitle("")+
    #       scale_color_brewer(palette='Set1')
-   #    
+   #
       #plot_list[[length(plot_list) + 1]] <- list(pl,pl_stat)
          plot_list[[length(plot_list) + 1]] <- list(pl)
-         
+
       }
       plot_list <- do.call(c, plot_list)
       figure <- ggarrange(plotlist = plot_list,ncol = 1)
       print(figure)
-      
+
       stats <- do.call(cbind, stats)
       colnames(stats) <- c(names(dat_x))
       rownames(stats) <- c("mean", "sd", "median", "IQR", "min", "max")
-      
-      
+
+
    }
    # Print main results of the test
    cat("\n", object@method, "\n")
-   if(length(object@Vn)==0){
+   if(length(object@Dn) > 0){
       test_results <- data.frame(
          Statistic = c("Dn", "Trace"),
-         Value = object@Un,
-         Critical_Value = object@CV_Un,
-         Reject_H0 = object@H0_Un
+         Value = c(object@Dn, object@Trace),
+         Critical_Value = c(object@CV_Dn, object@CV_Trace),
+         Reject_H0 = c(object@H0_Dn, object@H0_Trace)
       )
    } else {
       test_results <- data.frame(
          Statistic = c("Un", "Vn"),
-         Value = c(object@Un,object@Vn),
-         Critical_Value = c(object@CV_Un,object@CV_Vn),
-         Reject_H0 = c(object@H0_Un,object@H0_Vn)
+         Value = c(object@Un, object@Vn),
+         Critical_Value = c(object@CV_Un, object@CV_Vn),
+         Reject_H0 = c(object@H0_Un, object@H0_Vn)
       )
    }
    print(test_results)
-   
-   return(list(summary_tables = stats, 
-               test_results = test_results, 
+
+   return(list(summary_tables = stats,
+               test_results = test_results,
                qqplots = figure))
 })

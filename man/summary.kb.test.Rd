@@ -27,7 +27,7 @@ kernel-based quadratic distance test.
 # create a kb.test object
 x <- matrix(rnorm(100),ncol=2)
 # Normality test
-my_test <- kb.test(x, h=0.5)
+my_test <- kb.test(x, h=0.5, mu = c(0,0), Sigma = diag(2))
 summary(my_test)
 
 }
