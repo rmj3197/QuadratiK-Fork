@@ -7,3 +7,9 @@ src/kernel_function.o
 /tests/testthat/Rplots.pdf
 .vscode
 .idea
+src/kernel_function.gcda
+src/kernel_function.gcno
+src/QuadratiK.dll
+src/RcppExports.gcda
+src/RcppExports.gcno
+src/QuadratiK.dll
