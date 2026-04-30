@@ -43,7 +43,10 @@
 #'                    control parameter. Change in case of more than 10 samples.
 #' @param alternative Family of alternative chosen for selecting h, between 
 #'                    "location", "scale" and "skewness" (only if \code{h} 
-#'                    is not provided).
+#'                    is not provided). Default is "location" for the normality 
+#'                    test and "skewness" for the two-sample and k-sample tests. 
+#'                    Note that "skewness" is not available for the normality 
+#'                    test.
 #'
 #' @details 
 #' The function \code{kb.test} performs the kernel-based quadratic
@@ -299,6 +302,10 @@ setMethod("kb.test", signature(x = "ANY"),
 
              if(!(alternative%in%c("skewness", "location", "scale"))){
                stop("The algorithm for selecting the value of h can be performed with respect to the following families of alternatives: 'location', 'scale' or 'skewness'")
+             }
+
+             if (is.null(y) && alternative == "skewness") {
+                stop("Skewness alternative is not available for the normality test. Please choose 'location' or 'scale'.")
              }
 
              if(!(centeringType%in%c("Param", "Nonparam"))){

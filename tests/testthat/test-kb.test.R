@@ -229,4 +229,10 @@ test_that("Error when mu and Sigma are missing for parametric 2 sample test", {
                 "mu and Sigma must be provided for the parametric 2 sample test.")
 })
 
-
+# Test 11: Error when alternative is skewness for normality test
+test_that("Error when alternative is skewness for normality test", {
+   set.seed(123)
+   x <- matrix(rnorm(100), ncol = 2)
+   expect_error(kb.test(x, h=0.5, alternative = "skewness", mu = c(0,0), Sigma = diag(2)), 
+                "Skewness alternative is not available for the normality test. Please choose 'location' or 'scale'.", fixed=TRUE)
+})

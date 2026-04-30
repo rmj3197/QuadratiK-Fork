@@ -18,8 +18,10 @@
 #'          test.
 #' }
 #' @param alternative Family of alternative chosen for selecting h, between
-#'                    "location", "scale" and "skewness".
-#'                    Note that "skewness" is not available for the normality test.
+#'                    "location", "scale" and "skewness". Default is "location" 
+#'                    for the normality test and "skewness" for the two-sample 
+#'                    and k-sample tests. Note that "skewness" is not available 
+#'                    for the normality test.
 #' @param method The method used for critical value estimation
 #'               ("subsampling", "bootstrap", or "permutation") (default: "subsampling").
 #' @param B The number of iterations to use for critical value estimation
@@ -193,6 +195,14 @@ select_h <- function(x,
       }
    }
    
+   if (is.null(alternative)) {
+      if (is.null(y)) {
+         alternative <- "location"
+      } else {
+         alternative <- "skewness"
+      }
+   }
+
    if (!(alternative %in% c("location", "scale", "skewness"))) {
       stop("The alternative argument should be one of 'location', 'scale' or 'skewness'")
    }
