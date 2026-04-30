@@ -32,5 +32,5 @@ summary(my_test)
 
 }
 \seealso{
-\code{\link[=kb.test]{kb.test()}} and \linkS4class{kb.test} for more details.
+\code{\link[=kb.test]{kb.test()}} for more details.
 }

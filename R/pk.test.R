@@ -52,8 +52,6 @@
 #' - Compute the 95th quantile of the empirical distribution of the test
 #'   statistic.
 #' 
-#' @seealso \linkS4class{pk.test}
-#' 
 #' @note
 #' A U-statistic is a type of statistic that is used to estimate a population
 #' parameter. It is based on the idea of averaging over all possible *distinct*
@@ -217,7 +215,7 @@ setMethod("show", "pk.test",
 #'                         uniform distribution.
 #' }
 #' 
-#' @seealso [pk.test()] and \linkS4class{pk.test} for additional details.
+#' @seealso [pk.test()] for additional details.
 #'
 #' @importFrom ggpubr ggarrange
 #' @importFrom ggplot2 ggplot geom_line theme_minimal geom_abline ggtitle 

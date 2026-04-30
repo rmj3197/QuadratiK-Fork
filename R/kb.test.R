@@ -168,9 +168,6 @@
 #'  \frac{1}{n}\sum_{i=1}^{n} K(\mathbf{z}_i,\mathbf{t}) + 
 #'  \frac{1}{n(n-1)}\sum_{i=1}^{n} \sum_{j \not=i}^{n} 
 #'  K(\mathbf{z}_i,\mathbf{z}_j).}
-#'  
-#'
-#' @seealso \linkS4class{kb.test} for the class definition.
 #' 
 #' @return An S4 object of class \code{kb.test} containing the results of the 
 #' kernel-based quadratic distance tests, based on the normal kernel. The object
@@ -526,7 +523,7 @@ setMethod("show", "kb.test",
 #'    kernel-based quadratic distance test.
 #'    \item \code{qqplots} Figure with qq-plots for each variable.
 #' }
-#' @seealso [kb.test()] and \linkS4class{kb.test} for more details.
+#' @seealso [kb.test()] for more details.
 #'
 #' @importFrom ggpubr ggarrange
 #' @importFrom ggplot2 ggplot geom_line theme_minimal geom_abline ggtitle

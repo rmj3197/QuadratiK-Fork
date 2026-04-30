@@ -305,6 +305,3 @@ and Power Properties of Quadratic Distance Goodness-of-Fit Tests", Journal
 of the American Statistical Association, 109:505, 395-410,
 DOI: 10.1080/01621459.2013.836972
 }
-\seealso{
-\linkS4class{kb.test} for the class definition.
-}
