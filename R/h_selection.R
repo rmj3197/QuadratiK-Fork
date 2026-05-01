@@ -392,7 +392,10 @@ select_h <- function(x,
                        xi = mean_tilde,
                        Omega = S_tilde,
                        alpha = skew_tilde)
-      
+
+      xnew <- xnew - mean_dat
+      mean_dat <- rep(0, length(mean_dat))
+
       STATISTIC <- kbNormTest(xnew, h, mean_dat, S_dat)
       CV <- normal_CV(d, n, h, mean_dat, S_dat, B, Quantile)
       
